@@ -1,0 +1,24 @@
+version: "3"
+services:
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.10.2
+    restart: unless-stopped
+    # needs access permissions all shared volumes amd see --strict.perms=false
+    user: root
+    volumes:
+      # read filebeat config
+      - ${PWD}/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      # TLS certificates
+      # You can add Certification Authority cert ca.crt if system certs not sufficient
+      # You can also add certs to authenticate filebeat in Graylog (see filebeat.yml)
+      # Validate by: curl -v --cacert ca.crt https://logs.placeholderdomain.com
+      - ./certs:/usr/share/filebeat/certs:ro
+      # read docker logs
+      - /var/lib/docker:/var/lib/docker:ro
+      # enrich logs with things that are not directly in the log files. such as the name of the image or the name of the container
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - "filebeat"
+      - "-e"
+      - "--strict.perms=false"

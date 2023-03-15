@@ -1,0 +1,4 @@
+.env.graylog
+.idea/
+certs/
+plugins/

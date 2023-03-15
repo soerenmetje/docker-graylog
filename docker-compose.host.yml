@@ -1,0 +1,166 @@
+version: '3'
+services:
+  # MongoDB: https://hub.docker.com/_/mongo/
+  mongo:
+    # tested with 4.2
+    image: mongo:5.0
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - graylog-net
+  # Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/7.10/docker.html
+  elasticsearch:
+    # Graylog does not support Elasticsearch versions 7.11 or greater
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+    restart: unless-stopped
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    environment:
+      #- discovery.type=single-node
+      - http.host=0.0.0.0
+      - transport.host=localhost
+      - network.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Dlog4j2.formatMsgNoLookups=true -Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    networks:
+      - graylog-net
+      - kibana-net
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:7.10.2 # without oss can not connect to elastic search. some X-Path shit
+    restart: unless-stopped
+    environment:
+      #- server.name=kibana
+      #- server.host=0.0.0.0
+      - elasticsearch.hosts=http://elasticsearch:9200
+      #- monitoring.ui.container.elasticsearch.enabled=true
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+    ulimits:
+      nproc: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - kibana-net
+      - traefik-net
+    depends_on:
+      - elasticsearch
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net" # in case of multiple nets this forces to select the correct one
+      # ROUTER http and http to https redirect MIDDLEWARE
+      - "traefik.http.middlewares.kibana-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.kibana-router.middlewares=kibana-redirect"
+      - "traefik.http.routers.kibana-router.rule=Host(`kibana.placeholderdomain.com`)"
+      - "traefik.http.routers.kibana-router.entrypoints=web"
+      # ROUTER https
+      - "traefik.http.routers.kibana-router-secure.rule=Host(`kibana.placeholderdomain.com`)"
+      - "traefik.http.routers.kibana-router-secure.entrypoints=websecure"
+      - "traefik.http.routers.kibana-router-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.middlewares.kibana-auth.basicauth.users=user:$$apr1$$.feh8nKv$$brc4Ya/vdADCE9/bD0g2E0"
+      - "traefik.http.middlewares.kibana-auth.basicauth.realm=kibana"
+      - "traefik.http.routers.kibana-router-secure.middlewares=kibana-auth"
+      # Basic Auth: Declaring the user list
+      # Source: https://doc.traefik.io/traefik/v2.7/middlewares/http/basicauth/
+      #
+      # Note: when used in docker-compose.yml all dollar signs in the hash need to be doubled for escaping.
+      # To create a user:password pair, the following command can be used:
+      # echo $(htpasswd -nb user password) | sed -e s/\\$/\\$\\$/g
+      #
+      # Also note that dollar signs should NOT be doubled when they not evaluated (e.g. Ansible docker_container module).
+
+  # Graylog: https://hub.docker.com/r/graylog/graylog/
+  graylog:
+    # tested with 4.2
+    image: graylog/graylog:5.0
+    restart: unless-stopped
+    user: root
+    volumes:
+      - graylog-data:/usr/share/graylog/data
+      - ./plugins:/usr/share/graylog/plugin/
+      # TLS certs
+      # Important: use *_full.crt in Graylog Input (also includes CA cert)
+      - ./certs:/usr/share/graylog/certs:ro
+    env_file:
+      - .env.graylog
+    environment:
+      - GRAYLOG_ROOT_TIMEZONE=Europe/Berlin
+      #- GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+
+    entrypoint: /usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh
+    networks:
+      - traefik-net
+      - graylog-net
+    depends_on:
+      - mongo
+      - elasticsearch
+    ports:
+      # Syslog TCP
+      - "1514:1514"
+      # Syslog UDP
+      - "1514:1514/udp"
+      # GELF TCP
+      - "12201:12201"
+      # GELF UDP
+      - "12201:12201/udp"
+      # Beats TCP
+      - "5044:5044"
+      # Beats TCP
+      - "5044:5044/udp"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net" # in case of multiple nets this forces to select the correct one
+      # ROUTER http and http to https redirect MIDDLEWARE
+      - "traefik.http.middlewares.graylog-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.graylog-router.middlewares=graylog-redirect"
+      - "traefik.http.routers.graylog-router.rule=Host(`logs.placeholderdomain.com`)"
+      - "traefik.http.routers.graylog-router.entrypoints=web"
+      # ROUTER https
+      - "traefik.http.routers.graylog-router-secure.rule=Host(`logs.placeholderdomain.com`)"
+      - "traefik.http.routers.graylog-router-secure.entrypoints=websecure"
+      - "traefik.http.routers.graylog-router-secure.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.graylog-service.loadbalancer.server.port=9000"
+
+
+  # Get certificates from Traefik reverse proxy.
+  # This enables Graylog to secure Syslog, FileBeat, etc endpoints.
+  # For that select certificate in Input config in Graylog.
+  cert-extract:
+    image: soerenmetje/acme-certs-extract:latest
+    restart: unless-stopped
+    volumes:
+      # CHANGE PATH TO acme.json dir
+      - /var/www/traefik/letsencrypt:/acme:ro
+      - ./certs:/certs
+
+networks:
+  traefik-net:
+    external: true
+  graylog-net:
+    driver: bridge
+  kibana-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+
+# Volumes for persisting data, see https://docs.docker.com/engine/admin/volumes/volumes/
+volumes:
+  mongo-data:
+    driver: local
+  es-data:
+    driver: local
+  graylog-data:
+    driver: local
+  kibana-data:
+    driver: local
