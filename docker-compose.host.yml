@@ -88,8 +88,8 @@ services:
       - .env.graylog
     environment:
       - GRAYLOG_ROOT_TIMEZONE=Europe/Berlin # replace with your time zone
-      - GRAYLOG_ROOT_PASSWORD_SHA2=dfa9315c44e324bcc1425b2106fa74c9293f09dd0af1f8e718b44af44f19caf4 # replace with new SHA
-      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+      - GRAYLOG_ELASTICSEARCH_HOSTS=http://opensearch-node1:9200
+      #- GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
 
     entrypoint: /usr/bin/tini -- wait-for-it opensearch-node1:9200 --  /docker-entrypoint.sh
     networks:
