@@ -33,7 +33,7 @@ Clone this repository on your node and `cd` into the directory.
 Start reverse proxy Traefik if it is not already up and running on the node:
 
 ```shell
-docker-compose -f docker-compose.traefik.yml up -d
+docker compose -f docker-compose.traefik.yml up -d
 ```
 
 Replace placeholder domain for `graylog` service with your subdomain in all files:
@@ -62,7 +62,7 @@ Set path to `acme.json` (`letsencrypt` dir in traefik) in `cert-extract` service
 
 Start services:
 ```shell
-docker-compose -f docker-compose.host.yml up -d
+docker compose -f docker-compose.host.yml up -d
 ```
 
 ### VM Security Groups 
@@ -130,7 +130,7 @@ Change hosts in `filebeat.yml` to your graylog subdomain, if not already done.
 
 Start FileBeat:
 ```shell
-docker-compose -f docker-compose.filebeat.yml up -d
+docker compose -f docker-compose.filebeat.yml up -d
 ```
 
 #### FileBeat to Ship Container Logs in Kubernetes
