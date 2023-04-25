@@ -7,7 +7,6 @@ services:
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
-      - mongo-data:/data/configdb 
     networks:
       - graylog-net
 
