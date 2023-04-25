@@ -129,13 +129,13 @@ services:
   # Get certificates from Traefik reverse proxy.
   # This enables Graylog to secure Syslog, FileBeat, etc endpoints.
   # For that select certificate in Input config in Graylog.
-#  cert-extract:
-#    image: soerenmetje/acme-certs-extract:latest
-#    restart: unless-stopped
-#    volumes:
+  cert-extract:
+    image: soerenmetje/acme-certs-extract:latest
+    restart: unless-stopped
+    volumes:
       # CHANGE PATH TO acme.json dir
-#      - /var/www/traefik/letsencrypt:/acme:ro
-#      - ./certs:/certs
+      - /var/www/traefik/letsencrypt:/acme:ro
+      - ./certs:/certs
 
 networks:
   traefik-net:
