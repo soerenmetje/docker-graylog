@@ -1,5 +1,5 @@
 # Central Logging
-Stack with Graylog, Elasticsearch, Kibana, and Filebeat all running in Docker containers.
+Stack with Graylog, OpenSearch, and Filebeat all running in Docker containers.
 
 ## Purpose
 Gather logs from various servers on a central Logging server.
@@ -12,28 +12,28 @@ In particular, logs from docker container and pods in Kubernetes cluster should 
 
 ## Central Logging Server
 
-In this section we will setup the central logging server. 
-Is serves an instance of Graylog, Kibana, Elasticsearch, and Mongo, as well as a service to map certificates into graylog.
+In this section we will set up the central logging server. 
+Is serves an instance of Graylog, OpenSearch, and Mongo, as well as a service to map certificates into graylog.
 
-The webinterface of Graylog and Kibana will be available through the reverse proxy Traefik.
+The webinterface of Graylog and OpenSearch-Dashboard will be available through the reverse proxy Traefik.
 
 ### Prerequisites
 - Subdomain for Graylog
-- Subdomain for Kibana
+- Subdomain for OpenSearch-Dashboard
 - Node e.g. VM
 
-### Setup 
+### Setup
 
 Open ports mentioned in `docker-compose.host.yml` and `docker-compose.traefik.yml` in your firewall. See section [VM Security Groups](#vm-security-groups).
 
-Create DNS Entries for subdomains for `graylog` and `kibana` service.
+Create DNS Entries for subdomains for `graylog` and `opensearch-dashboard` service.
 
 Clone this repository on your node and `cd` into the directory.
 
 Start reverse proxy Traefik if it is not already up and running on the node:
 
 ```shell
-docker-compose -f docker-compose.traefik.yml up -d
+docker compose -f docker-compose.traefik.yml up -d
 ```
 
 Replace placeholder domain for `graylog` service with your subdomain in all files:
@@ -41,11 +41,11 @@ Replace placeholder domain for `graylog` service with your subdomain in all file
 find . -type f -exec sed -i 's/logs.placeholderdomain.com/logs.mydomain.com/g' {} +
 ```
 
-> The domain for graylog is used in multiple files such as `filebeat.yml` `.env.graylog.template` `docker-compose.host.yml` and `kubernetes-deploy/filebeat-daemonset.yaml`
+> The domain for graylog is used in multiple files such as `filebeat.yml` `docker-compose.host.yml` and `kubernetes-deploy/filebeat-daemonset.yaml`
 
-Replace placeholder domain for `kibana` service with your subdomain in all files:
+Replace placeholder domain for `opensearch-dashboard` service with your subdomain in all files:
 ```shell
-find . -type f -exec sed -i 's/kibana.placeholderdomain.com/kibana.mydomain.com/g' {} +
+find . -type f -exec sed -i 's/os.placeholderdomain.com/os.mydomain.com/g' {} +
 ```
 
 Copy `.env.graylog.template` and rename to `.env.graylog`:
@@ -56,14 +56,18 @@ cp .env.graylog.template .env.graylog
 
 Set variables `GRAYLOG_ROOT_PASSWORD_SHA2` and `GRAYLOG_PASSWORD_SECRET` in `.env.graylog`.
 
-Set Traefik Basic auth in `kibana` service in `docker-compose.host.yml`. To do so you may search for `traefik.http.middlewares.kibana-auth.basicauth.users`.
-
-Set path to `acme.json` (`letsencrypt` dir in traefik) in `cert-extract` service in `docker-compose.host.yml`. To do so you may search for `/var/www/traefik/letsencrypt`
+Set path to `acme.json` (`letsencrypt` dir in traefik) in `cert-extract` service in `docker-compose.host.yml`. To do so you may search for `CHANGE PATH TO acme.json dir`
 
 Start services:
 ```shell
-docker-compose -f docker-compose.host.yml up -d
+docker compose -f docker-compose.host.yml up -d
 ```
+
+The Graylog and OpenSearch-Dashboard webinterface should be available 
+within 2 minutes.
+
+Set auth in OpenSearch-Dashboard webinterface.
+The default username and password is `admin`.
 
 ### VM Security Groups 
 In order to restrict access to the VM security groups can be used. 
@@ -130,7 +134,7 @@ Change hosts in `filebeat.yml` to your graylog subdomain, if not already done.
 
 Start FileBeat:
 ```shell
-docker-compose -f docker-compose.filebeat.yml up -d
+docker compose -f docker-compose.filebeat.yml up -d
 ```
 
 #### FileBeat to Ship Container Logs in Kubernetes
