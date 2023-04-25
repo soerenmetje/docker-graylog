@@ -41,7 +41,7 @@ Replace placeholder domain for `graylog` service with your subdomain in all file
 find . -type f -exec sed -i 's/logs.placeholderdomain.com/logs.mydomain.com/g' {} +
 ```
 
-> The domain for graylog is used in multiple files such as `filebeat.yml` `.env.graylog.template` `docker-compose.host.yml` and `kubernetes-deploy/filebeat-daemonset.yaml`
+> The domain for graylog is used in multiple files such as `filebeat.yml` `docker-compose.host.yml` and `kubernetes-deploy/filebeat-daemonset.yaml`
 
 Replace placeholder domain for `opensearch-dashboard` service with your subdomain in all files:
 ```shell
