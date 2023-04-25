@@ -144,8 +144,8 @@ networks:
     driver: bridge
   opensearch-net:
     driver: bridge
-#    driver_opts:
-#      com.docker.network.bridge.enable_icc: "true"
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
 
 # Volumes for persisting data, see https://docs.docker.com/engine/admin/volumes/volumes/
 volumes:
