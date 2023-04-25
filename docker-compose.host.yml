@@ -64,10 +64,10 @@ services:
       # ROUTER http and http to https redirect MIDDLEWARE
       - "traefik.http.middlewares.os-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.os-router.middlewares=os-redirect"
-#      - "traefik.http.routers.os-router.rule=Host('host')" # edit with dns name
-#      - "traefik.http.routers.os-router.entrypoints=web"
+      - "traefik.http.routers.os-router.rule=Host('os.placeholderdomain.com')"
+      - "traefik.http.routers.os-router.entrypoints=web"
       # ROUTER https
-      - "traefik.http.routers.os-router-secure.rule=Host(`host`)" # edit with dns name
+      - "traefik.http.routers.os-router-secure.rule=Host(`os.placeholderdomain.com`)"
       - "traefik.http.routers.os-router-secure.entrypoints=websecure"
       - "traefik.http.routers.os-router-secure.tls.certresolver=mytlschallenge"
       - "traefik.http.services.os-service.loadbalancer.server.port=5601"
@@ -117,10 +117,10 @@ services:
       # ROUTER http and http to https redirect MIDDLEWARE
       - "traefik.http.middlewares.graylog-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.graylog-router.middlewares=graylog-redirect"
-#      - "traefik.http.routers.graylog-router.rule=Host(`portlog.vk-med.uni-goettingen.de`)"
-#      - "traefik.http.routers.graylog-router.entrypoints=web"
+      - "traefik.http.routers.graylog-router.rule=Host(`logs.placeholderdomain.com`)"
+      - "traefik.http.routers.graylog-router.entrypoints=web"
       # ROUTER https
-      - "traefik.http.routers.graylog-router-secure.rule=Host(`portlog.vk-med.uni-goettingen.de`)"
+      - "traefik.http.routers.graylog-router-secure.rule=Host(`logs.placeholderdomain.com`)"
       - "traefik.http.routers.graylog-router-secure.entrypoints=websecure"
       - "traefik.http.routers.graylog-router-secure.tls.certresolver=mytlschallenge"
       - "traefik.http.services.graylog-service.loadbalancer.server.port=9000"
