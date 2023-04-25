@@ -141,10 +141,8 @@ networks:
   traefik-net:
     external: true
   graylog-net:
-    name: graylog-net
     driver: bridge
   opensearch-net:
-    name: opensearch-net
     driver: bridge
 #    driver_opts:
 #      com.docker.network.bridge.enable_icc: "true"
