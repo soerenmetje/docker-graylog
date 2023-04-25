@@ -56,14 +56,18 @@ cp .env.graylog.template .env.graylog
 
 Set variables `GRAYLOG_ROOT_PASSWORD_SHA2` and `GRAYLOG_PASSWORD_SECRET` in `.env.graylog`.
 
-Set Traefik Basic auth in `opensearch-dashboard` service in `docker-compose.host.yml`. To do so you may search for `traefik.http.middlewares.os-auth.basicauth.users`.
-
 Set path to `acme.json` (`letsencrypt` dir in traefik) in `cert-extract` service in `docker-compose.host.yml`. To do so you may search for `CHANGE PATH TO acme.json dir`
 
 Start services:
 ```shell
 docker compose -f docker-compose.host.yml up -d
 ```
+
+The Graylog and OpenSearch-Dashboard webinterface should be available 
+within 2 minutes.
+
+Set auth in OpenSearch-Dashboard webinterface.
+The default username and password is `admin`.
 
 ### VM Security Groups 
 In order to restrict access to the VM security groups can be used. 
