@@ -1,9 +1,11 @@
 # Central Logging
-Stack with Graylog, OpenSearch, and Filebeat all running in Docker containers.
+Setup with Graylog, OpenSearch, and Filebeat all running in Docker containers.
 
-## Purpose
-Gather logs from various servers on a central Logging server.
-In particular, logs from docker container and pods in Kubernetes cluster should be available in a web dashboard.
+The webinterfaces of Graylog and OpenSearch-Dashboard will be available through the reverse proxy Traefik.
+
+## Goal
+The goal is to gather logs from various servers on a central Logging server.
+In particular, logs from docker containers and pods in a Kubernetes cluster should be available in a web dashboard.
 
 ## Components
 
@@ -12,19 +14,26 @@ In particular, logs from docker container and pods in Kubernetes cluster should 
 
 ## Central Logging Server
 
-In this section we will set up the central logging server. 
-Is serves an instance of Graylog, OpenSearch, and Mongo, as well as a service to map certificates into graylog.
+In this section we set up the central logging server. 
+It serves following services:
+- Graylog
+- OpenSearch
+- OpenSearch-Dashboard
+- Mongo
+- cert-extract - make acme certificates from Traefik available in Graylog
+- Traefik - reverse proxy
 
-The webinterface of Graylog and OpenSearch-Dashboard will be available through the reverse proxy Traefik.
+The setup is tested using Ubuntu 22.04 - but it should work on other Linux as well.
 
 ### Prerequisites
 - Subdomain for Graylog
 - Subdomain for OpenSearch-Dashboard
-- Node e.g. VM
+- Server
 
 ### Setup
 
-Open ports mentioned in `docker-compose.host.yml` and `docker-compose.traefik.yml` in your firewall. See section [VM Security Groups](#vm-security-groups).
+Open ports mentioned in `docker-compose.host.yml` and `docker-compose.traefik.yml` in your firewall. For more details, have a look at the section [VM Security Groups](#vm-security-groups). 
+If you are using a simple software firewall like Firewalld or UFW, keep in mind that [docker bypasses all firewall rules](https://dev.to/soerenmetje/how-to-secure-a-docker-host-using-firewalld-2joo) in default configuration.
 
 Create DNS Entries for subdomains for `graylog` and `opensearch-dashboard` service.
 
@@ -69,7 +78,7 @@ within 2 minutes.
 Set auth in OpenSearch-Dashboard webinterface.
 The default username and password is `admin`.
 
-### VM Security Groups 
+### VM Security Groups
 In order to restrict access to the VM security groups can be used. 
 To allow web browsers and log agents like filebeat to access Graylog, 
 some security groups have to be added to host VM:
@@ -154,3 +163,4 @@ kubectl apply -f ./kubernetes-deploy
 - Filebeat @ Docker gathering system logs: https://www.elastic.co/guide/en/beats/filebeat/7.17/running-on-docker.html
 - ELK @ Docker: https://medium.com/geekculture/shoving-your-docker-container-logs-to-elk-made-simple-882bffdbcad6
 - Secure communication with Logstash: https://www.elastic.co/guide/en/beats/filebeat/current/configuring-ssl-logstash.html
+- Graylog OpenSearch: https://go2docs.graylog.org/5-0/planning_your_deployment/upgrading_to_opensearch_-_installation.htm
