@@ -65,6 +65,13 @@ cp .env.graylog.template .env.graylog
 
 Set variables `GRAYLOG_ROOT_PASSWORD_SHA2` and `GRAYLOG_PASSWORD_SECRET` in `.env.graylog`.
 
+Copy `.env.opensearch.template` and rename to `.env.opensearch`:
+
+```shell
+cp .env.opensearch.template .env.opensearch
+```
+Set variables `OPENSEARCH_INITIAL_ADMIN_PASSWORD` in `.env.opensearch`.
+
 Set path to `acme.json` (`letsencrypt` dir in traefik) in `cert-extract` service in `docker-compose.host.yml`. To do so you may search for `CHANGE PATH TO acme.json dir`
 
 Start services:
