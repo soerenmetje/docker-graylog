@@ -1,7 +1,7 @@
 services:
   # MongoDB: https://hub.docker.com/_/mongo/
   mongo:
-    image: mongo:6.0
+    image: mongo:7.0
     container_name: mongodb
     restart: unless-stopped
     volumes:
@@ -10,6 +10,7 @@ services:
       - graylog-net
 
   opensearch:
+    # Graylog does not support OpenSearch 2.16 or greater yet
     image: opensearchproject/opensearch:2.15.0
     container_name: opensearch-node1
     restart: unless-stopped
@@ -73,7 +74,7 @@ services:
 
   # Graylog: https://hub.docker.com/r/graylog/graylog/
   graylog:
-    image: graylog/graylog:5.2
+    image: graylog/graylog:6.1
     container_name: graylog
     restart: unless-stopped
     user: root
