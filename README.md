@@ -140,6 +140,28 @@ sudo systemctl restart rsyslog.service
 sudo systemctl status rsyslog.service 
 ```
 
+### Fluent Bit
+Fluent Bit is a log-shipper and can be used to gathering logs from f.e. Docker and Kubernetes.
+
+First, in Graylog, create an `Input` for GELF TCP first. This input can be used by multiple GELF services.
+
+#### Fluent Bit to Ship Container Logs in Docker
+
+https://medium.com/@muhammedsaidkaya/avoiding-ecs-agent-docker-container-logs-in-fluent-bit-1419e8b32976
+
+TODO
+
+#### Fluent Bit to Ship Container Logs in Kubernetes
+Change host in `kubernetes-deploy/fluentbit-helm-values.yaml` to your graylog subdomain, if not already done.
+Also, you may want to check the Fluent Bit configuration  in `kubernetes-deploy/fluentbit-helm-values.yaml` under tag `config`.
+
+Deploy Fluent Bit:
+```shell
+kubectl create namespace fluentbit
+helm repo add fluent https://fluent.github.io/helm-charts
+helm upgrade --install fluent-bit fluent/fluent-bit -f kubernetes-deploy/fluentbit-helm-values.yaml -n fluentbit
+```
+
 ### FileBeat
 FileBeat is a log-shipper and can be used to gathering logs from f.e. Docker.
 
@@ -166,8 +188,5 @@ kubectl apply -f ./kubernetes-deploy
 ## Sources
 - Graylog Docs Docker https://go2docs.graylog.org/5-0/downloading_and_installing_graylog/docker_installation.htm
 - Graylog & co @ Docker https://docs.graylog.org/docs/docker
-- Filebeat @ Docker gathering Docker logs: https://www.sarulabs.com/post/5/2019-08-12/sending-docker-logs-to-elasticsearch-and-kibana-with-filebeat.html
-- Filebeat @ Docker gathering system logs: https://www.elastic.co/guide/en/beats/filebeat/7.17/running-on-docker.html
-- ELK @ Docker: https://medium.com/geekculture/shoving-your-docker-container-logs-to-elk-made-simple-882bffdbcad6
-- Secure communication with Logstash: https://www.elastic.co/guide/en/beats/filebeat/current/configuring-ssl-logstash.html
+- Fluent Bit @ Kubernetes https://docs.fluentbit.io/manual/installation/kubernetes
 - Graylog OpenSearch: https://go2docs.graylog.org/5-0/planning_your_deployment/upgrading_to_opensearch_-_installation.htm
